@@ -3,6 +3,8 @@ import { Navigate, useParams } from "react-router-dom";
 import axios from "axios";
 
 import { UserContext } from "../components/UserContext";
+import AccountNav from "../components/AccountNav";
+import Places from "./Places";
 
 const Profile = () => {
   const [redirect, setRedirect] = useState(null);
@@ -33,16 +35,17 @@ const Profile = () => {
 
   return (
     <div>
-      {/* <AccountNav /> */}
+      <AccountNav />
       {subpage === "profile" && (
         <div className="text-center max-w-lg mx-auto">
-          Logged in as {user.name} ({user.email})<br />
-          <button onClick={logout} className="primary max-w-sm mt-2">
+          Logged in as {user?.name} ({user?.email})<br />
+          <button onClick={logout} className="primary max-w-sm my-4">
             Logout
           </button>
         </div>
       )}
-      {/* {subpage === "places" && <PlacesPage />} */}
+
+      {subpage === "places" && <Places />}
     </div>
   );
 };
