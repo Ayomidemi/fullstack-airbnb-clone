@@ -15,7 +15,7 @@ export default function IndexPage() {
 
   return (
     <div className="mt-8 grid gap-x-6 gap-y-8 grid-cols-2 md:grid-cols-3 lg:grid-cols-3">
-      {places.length > 0 &&
+      {places.length > 0 ? (
         places.map((place, i) => (
           <Link to={"/place/" + place._id} key={i}>
             <div className="bg-gray-500 mb-2 rounded-2xl flex">
@@ -33,7 +33,10 @@ export default function IndexPage() {
               <span className="font-bold">${place.price}</span> per night
             </div>
           </Link>
-        ))}
+        ))
+      ) : (
+        <h2 className="text-center text-xl">No places found</h2>
+      )}
     </div>
   );
 }
