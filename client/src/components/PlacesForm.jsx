@@ -11,7 +11,11 @@ const PlacesForm = () => {
   const [details, setDetails] = useState({
     title: "",
     address: "",
-    photos: [],
+    photos: [
+      "https://images.pexels.com/photos/13216369/pexels-photo-13216369.jpeg?auto=compress&cs=tinysrgb&w=800&lazy=load",
+      "https://images.pexels.com/photos/27224214/pexels-photo-27224214/free-photo-of-people.jpeg?auto=compress&cs=tinysrgb&w=800&lazy=load",
+      "https://images.pexels.com/photos/14296191/pexels-photo-14296191.jpeg?auto=compress&cs=tinysrgb&w=800&lazy=load",
+    ],
     description: "",
     perks: [],
     extraInfo: "",

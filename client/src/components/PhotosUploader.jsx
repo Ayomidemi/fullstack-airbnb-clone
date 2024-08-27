@@ -11,12 +11,13 @@ export default function PhotosUploader({ addedPhotos, onChange }) {
     const { data: filename } = await axios.post("/upload-by-link", {
       link: photoLink,
     });
+
     onChange((prev) => {
       return [...prev, filename];
     });
     setPhotoLink("");
   }
-  
+
   function uploadPhoto(ev) {
     const files = ev.target.files;
     const data = new FormData();
@@ -39,7 +40,7 @@ export default function PhotosUploader({ addedPhotos, onChange }) {
     ev.preventDefault();
     onChange([...addedPhotos.filter((photo) => photo !== filename)]);
   }
-  
+
   function selectAsMainPhoto(ev, filename) {
     ev.preventDefault();
     onChange([filename, ...addedPhotos.filter((photo) => photo !== filename)]);
@@ -62,9 +63,9 @@ export default function PhotosUploader({ addedPhotos, onChange }) {
         </button>
       </div>
       <div className="mt-2 grid gap-2 grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
-        {addedPhotos.length > 0 &&
-          addedPhotos.map((link) => (
-            <div className="h-32 flex relative" key={link}>
+        {addedPhotos?.length > 0 &&
+          addedPhotos?.map((link, i) => (
+            <div className="h-32 flex relative" key={i}>
               <Image
                 className="rounded-2xl w-full object-cover"
                 src={link}

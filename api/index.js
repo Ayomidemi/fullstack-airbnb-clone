@@ -4,8 +4,12 @@ const mongoose = require("mongoose");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const cookieParser = require("cookie-parser");
+const download = require("image-downloader");
+const multer = require("multer");
+const fs = require("fs");
 
 const UserModel = require("./models/User");
+const PlaceModel = require("./models/Place");
 
 require("dotenv").config();
 const app = express();
@@ -15,6 +19,7 @@ const jwtSecret = "fasefraw4r5r3wq45wdfgw34twdfg";
 
 app.use(express.json());
 app.use(cookieParser());
+app.use("/uploads", express.static(__dirname + "/uploads"));
 app.use(
   cors({
     origin: "http://localhost:5173",
@@ -28,9 +33,9 @@ mongoose
   .connect(process.env.MONGO_URL, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
-    socketTimeoutMS: 450000, // 45 seconds
-    connectTimeoutMS: 30000, // 30 seconds
-    serverSelectionTimeoutMS: 50000, // 5 seconds to connect to the server
+    socketTimeoutMS: 450000,
+    connectTimeoutMS: 30000,
+    serverSelectionTimeoutMS: 50000,
   })
   .then(() => console.log("Connected to MongoDB"))
   .catch((err) => console.log("Could not connect to MongoDB...", err));
@@ -38,6 +43,15 @@ mongoose
 app.get("/test", (req, res) => {
   res.json("test ok");
 });
+
+function getUserDataFromReq(req) {
+  return new Promise((resolve, reject) => {
+    jwt.verify(req.cookies.token, jwtSecret, {}, async (err, userData) => {
+      if (err) throw err;
+      resolve(userData);
+    });
+  });
+}
 
 // SIGN UP
 app.post("/register", async (req, res) => {
@@ -110,6 +124,63 @@ app.get("/profile", (req, res) => {
 //   LOGOUT
 app.post("/logout", (req, res) => {
   res.cookie("token", "").json(true);
+});
+
+// IMAGE UPLOAD BY LINK
+app.post("/upload-by-link", async (req, res) => {
+  const { link } = req.body;
+  const newName = "photo" + Date.now() + ".jpg";
+
+  const url = await download.image({
+    url: link,
+    dest: "/tmp/" + newName,
+  });
+
+  //   const url = await uploadToS3(
+  //     "/tmp/" + newName,
+  //     newName,
+  //     mime.lookup("/tmp/" + newName)
+  //   );
+  res.json(url);
+});
+
+const photosMiddleware = multer({ dest: "/tmp" });
+
+// IMAGE UPLOAD
+app.post("/upload", photosMiddleware.array("photos", 100), async (req, res) => {
+  const uploadedFiles = [];
+  for (let i = 0; i < req.files.length; i++) {
+    const { path, originalname, mimetype } = req.files[i];
+    const url = await uploadToS3(path, originalname, mimetype);
+    uploadedFiles.push(url);
+  }
+  res.json(uploadedFiles);
+});
+
+// CREATE A PLACE
+app.post("/places", (req, res) => {
+  //   mongoose.connect(process.env.MONGO_URL);
+  const { token } = req.cookies;
+  const deets = req.body;
+
+  jwt.verify(token, jwtSecret, {}, async (err, userData) => {
+    if (err) throw err;
+    const placeDoc = await PlaceModel.create({
+      owner: userData.id,
+      ...deets,
+    });
+    res.json(placeDoc);
+  });
+});
+
+// GET ALL PLACES
+app.get("/user-places", (req, res) => {
+  //   mongoose.connect(process.env.MONGO_URL);
+  const { token } = req.cookies;
+  jwt.verify(token, jwtSecret, {}, async (err, userData) => {
+    const { id } = userData;
+    res.json(await PlaceModel.find({ owner: id }));
+  });
 });
 
 app.listen(4000);
