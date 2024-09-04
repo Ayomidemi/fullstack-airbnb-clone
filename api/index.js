@@ -82,7 +82,11 @@ app.post("/login", async (req, res) => {
           if (err) throw err;
           res
             .cookie("token", token)
-            .json({ email: userDoc.email, id: userDoc._id });
+            .json({
+              email: userDoc.email,
+              id: userDoc._id,
+              name: userDoc.name,
+            });
         }
       );
     } else {
