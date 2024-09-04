@@ -28,21 +28,7 @@ app.use(
   })
 );
 
-// mongoose.connect(process.env.MONGO_URL);
-mongoose
-  .connect(process.env.MONGO_URL, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-    socketTimeoutMS: 450000,
-    connectTimeoutMS: 30000,
-    serverSelectionTimeoutMS: 50000,
-  })
-  .then(() => console.log("Connected to MongoDB"))
-  .catch((err) => console.log("Could not connect to MongoDB...", err));
-
-app.get("/test", (req, res) => {
-  res.json("test ok");
-});
+mongoose.connect(process.env.MONGO_URL);
 
 function getUserDataFromReq(req) {
   return new Promise((resolve, reject) => {
@@ -79,7 +65,6 @@ app.post("/register", async (req, res) => {
 
 // LOGIN
 app.post("/login", async (req, res) => {
-  //   mongoose.connect(process.env.MONGO_URL);
   const { email, password } = req.body;
   const userDoc = await UserModel.findOne({ email }).maxTimeMS(20000);
 
@@ -110,7 +95,6 @@ app.post("/login", async (req, res) => {
 
 // GET PROFILE
 app.get("/profile", (req, res) => {
-  //   mongoose.connect(process.env.MONGO_URL);
   const { token } = req.cookies;
   if (token) {
     jwt.verify(token, jwtSecret, {}, async (err, userData) => {
@@ -128,40 +112,39 @@ app.post("/logout", (req, res) => {
   res.cookie("token", "").json(true);
 });
 
-// IMAGE UPLOAD BY LINKjhwe fgyrtgfg rgfyer r
+// IMAGE UPLOAD BY LINK
 app.post("/upload-by-link", async (req, res) => {
   const { link } = req.body;
   const newName = "photo" + Date.now() + ".jpg";
 
   const url = await download.image({
     url: link,
-    dest: "/tmp/" + newName,
+    dest: __dirname + "/uploads/" + newName,
   });
 
-  //   const url = await uploadToS3(
-  //     "/tmp/" + newName,
-  //     newName,
-  //     mime.lookup("/tmp/" + newName)
-  //   );
-  res.json(url);
+  res.json(newName);
 });
 
-const photosMiddleware = multer({ dest: "/tmp" });
+const photosMiddleware = multer({ dest: "uploads" });
 
-// IMAGE UPLOAD
+// IMAGE UPLOAD FROM FILES
 app.post("/upload", photosMiddleware.array("photos", 100), async (req, res) => {
   const uploadedFiles = [];
+
   for (let i = 0; i < req.files.length; i++) {
-    const { path, originalname, mimetype } = req.files[i];
-    const url = await uploadToS3(path, originalname, mimetype);
-    uploadedFiles.push(url);
+    const { path, originalname } = req.files[i];
+    const parts = originalname.split(".");
+    const ext = parts[parts.length - 1];
+    const newPath = path + "." + ext;
+    fs.renameSync(path, newPath);
+    uploadedFiles.push(newPath.split("/").pop());
   }
+
   res.json(uploadedFiles);
 });
 
 // CREATE A PLACE
 app.post("/places", (req, res) => {
-  //   mongoose.connect(process.env.MONGO_URL);
   const { token } = req.cookies;
   const deets = req.body;
 
@@ -177,7 +160,6 @@ app.post("/places", (req, res) => {
 
 // GET ALL PLACES BY USER ID
 app.get("/user-places", (req, res) => {
-  //   mongoose.connect(process.env.MONGO_URL);
   const { token } = req.cookies;
   jwt.verify(token, jwtSecret, {}, async (err, userData) => {
     const { id } = userData;
@@ -187,7 +169,6 @@ app.get("/user-places", (req, res) => {
 
 // GET A PLACE BY ID
 app.get("/places/:id", async (req, res) => {
-  // mongoose.connect(process.env.MONGO_URL);
   const { id } = req.params;
   res.json(await PlaceModel.findById(id));
 });
@@ -233,7 +214,6 @@ app.post("/bookings", async (req, res) => {
 
 // GET ALL BOOKINGS BY USER ID
 app.get("/bookings", async (req, res) => {
-  // mongoose.connect(process.env.MONGO_URL);
   const userData = await getUserDataFromReq(req);
   res.json(await BookingModel.find({ user: userData.id }).populate("place"));
 });
