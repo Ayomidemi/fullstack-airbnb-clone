@@ -1,16 +1,19 @@
 import { useContext, useState } from "react";
-import { Navigate, useParams } from "react-router-dom";
+import { Navigate, useLocation } from "react-router-dom";
 import axios from "axios";
 
 import { UserContext } from "../components/UserContext";
 import AccountNav from "../components/AccountNav";
 import Places from "./Places";
+import Bookings from "./Bookings";
 
 const Profile = () => {
   const [redirect, setRedirect] = useState(null);
   const { ready, user, setUser } = useContext(UserContext);
 
-  let { subpage } = useParams();
+  const { pathname } = useLocation();
+
+  let subpage = pathname.split("/")?.[2];
   if (subpage === undefined) {
     subpage = "profile";
   }
@@ -46,6 +49,8 @@ const Profile = () => {
       )}
 
       {subpage === "places" && <Places />}
+
+      {subpage === "bookings" && <Bookings />}
     </div>
   );
 };

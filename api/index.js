@@ -10,6 +10,7 @@ const fs = require("fs");
 
 const UserModel = require("./models/User");
 const PlaceModel = require("./models/Place");
+const BookingModel = require("./models/Booking");
 
 require("dotenv").config();
 const app = express();
@@ -214,6 +215,27 @@ app.put("/places", async (req, res) => {
 // GET ALL PLACES
 app.get("/places", async (req, res) => {
   res.json(await PlaceModel.find());
+});
+
+// CREATE A BOOKING
+app.post("/bookings", async (req, res) => {
+  const deets = req.body;
+  const userData = await getUserDataFromReq(req);
+
+  await BookingModel.create({ ...deets, user: userData.id })
+    .then((doc) => {
+      res.json(doc);
+    })
+    .catch((err) => {
+      throw err;
+    });
+});
+
+// GET ALL BOOKINGS BY USER ID
+app.get("/bookings", async (req, res) => {
+  // mongoose.connect(process.env.MONGO_URL);
+  const userData = await getUserDataFromReq(req);
+  res.json(await BookingModel.find({ user: userData.id }).populate("place"));
 });
 
 app.listen(4000);

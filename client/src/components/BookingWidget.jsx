@@ -26,7 +26,8 @@ export default function BookingWidget({ place }) {
         name: user?.name || "",
       });
     }
-  }, [details, user]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user]);
 
   let numberOfNights = 0;
   if (details?.checkIn && details?.checkOut) {
