@@ -38,11 +38,13 @@ export default function PhotosUploader({ addedPhotos, onChange }) {
 
   function removePhoto(ev, filename) {
     ev.preventDefault();
+
     onChange([...addedPhotos.filter((photo) => photo !== filename)]);
   }
 
   function selectAsMainPhoto(ev, filename) {
     ev.preventDefault();
+
     onChange([filename, ...addedPhotos.filter((photo) => photo !== filename)]);
   }
 

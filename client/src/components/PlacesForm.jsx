@@ -103,8 +103,8 @@ const PlacesForm = () => {
         {preInput("Photos", "more = better")}
         <PhotosUploader
           addedPhotos={details?.photos}
-          onChange={(newPerks) =>
-            setDetails((prevDetails) => ({ ...prevDetails, photos: newPerks }))
+          onChange={(newDeets) =>
+            setDetails((prevDetails) => ({ ...prevDetails, photos: newDeets }))
           }
         />
 

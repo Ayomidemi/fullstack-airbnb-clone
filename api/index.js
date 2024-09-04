@@ -28,7 +28,6 @@ app.use(
 );
 
 // mongoose.connect(process.env.MONGO_URL);
-
 mongoose
   .connect(process.env.MONGO_URL, {
     useNewUrlParser: true,
@@ -95,7 +94,9 @@ app.post("/login", async (req, res) => {
         {},
         (err, token) => {
           if (err) throw err;
-          res.cookie("token", token).json(userDoc);
+          res
+            .cookie("token", token)
+            .json({ email: userDoc.email, id: userDoc._id });
         }
       );
     } else {
@@ -126,7 +127,7 @@ app.post("/logout", (req, res) => {
   res.cookie("token", "").json(true);
 });
 
-// IMAGE UPLOAD BY LINK
+// IMAGE UPLOAD BY LINKjhwe fgyrtgfg rgfyer r
 app.post("/upload-by-link", async (req, res) => {
   const { link } = req.body;
   const newName = "photo" + Date.now() + ".jpg";
@@ -173,7 +174,7 @@ app.post("/places", (req, res) => {
   });
 });
 
-// GET ALL PLACES
+// GET ALL PLACES BY USER ID
 app.get("/user-places", (req, res) => {
   //   mongoose.connect(process.env.MONGO_URL);
   const { token } = req.cookies;
@@ -181,6 +182,38 @@ app.get("/user-places", (req, res) => {
     const { id } = userData;
     res.json(await PlaceModel.find({ owner: id }));
   });
+});
+
+// GET A PLACE BY ID
+app.get("/places/:id", async (req, res) => {
+  // mongoose.connect(process.env.MONGO_URL);
+  const { id } = req.params;
+  res.json(await PlaceModel.findById(id));
+});
+
+// UPDATE A PLACE
+app.put("/places", async (req, res) => {
+  const { token } = req.cookies;
+  const { id, ...deets } = req.body;
+
+  jwt.verify(token, jwtSecret, {}, async (err, userData) => {
+    if (err) throw err;
+
+    const placeDoc = await PlaceModel.findById(id);
+
+    if (userData.id !== placeDoc.owner.toString()) {
+      return res.status(403).json("You are not the owner of this place!");
+    } else {
+      placeDoc.set(deets);
+      placeDoc.save();
+      res.json("Place updated!");
+    }
+  });
+});
+
+// GET ALL PLACES
+app.get("/places", async (req, res) => {
+  res.json(await PlaceModel.find());
 });
 
 app.listen(4000);
