@@ -77,16 +77,14 @@ app.post("/login", async (req, res) => {
           id: userDoc._id,
         },
         jwtSecret,
-        {},
+        { expiresIn: "1h" },
         (err, token) => {
           if (err) throw err;
-          res
-            .cookie("token", token)
-            .json({
-              email: userDoc.email,
-              id: userDoc._id,
-              name: userDoc.name,
-            });
+          res.cookie("token", token).json({
+            email: userDoc.email,
+            id: userDoc._id,
+            name: userDoc.name,
+          });
         }
       );
     } else {
@@ -102,7 +100,13 @@ app.get("/profile", (req, res) => {
   const { token } = req.cookies;
   if (token) {
     jwt.verify(token, jwtSecret, {}, async (err, userData) => {
-      if (err) throw err;
+      if (err) {
+        if (err.name === "TokenExpiredError") {
+          return res.status(401).json({ message: "Token expired" });
+        }
+        return res.status(403).json({ message: "Unauthorized" });
+      }
+
       const { name, email, _id } = await UserModel.findById(userData.id);
       res.json({ name, email, _id });
     });
